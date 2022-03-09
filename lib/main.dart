@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(CalculatorApp());
+void main() => runApp(const CalculatorApp());
 
-class CalculatorApp extends StatelessWidget {
-  CalculatorApp({
+class CalculatorApp extends StatefulWidget {
+  const CalculatorApp({
     Key? key,
   }) : super(key: key);
 
-  final String title = 'Calculator';
+  @override
+  State<CalculatorApp> createState() => _CalculatorAppState();
+}
 
-  final String display = 'Display';
+class _CalculatorAppState extends State<CalculatorApp> {
+  final String _title = 'Calculator';
 
-  final List<List<String>> buttons = [
+  final List<List<String>> _buttons = [
     ['C', 'D', '%', '/'],
     ['7', '8', '9', '*'],
     ['4', '5', '6', '+'],
     ['1', '2', '3', '-'],
     ['0', '.', '='],
   ];
+
+  String _display = 'Display';
+
+  void _onPressed(String button) {
+    setState(() {
+      _display = 'Typed "$button" button';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,15 +37,16 @@ class CalculatorApp extends StatelessWidget {
         backgroundColor: const Color(0xff6f6f6f),
         appBar: AppBar(
           backgroundColor: const Color(0xff6f6f6f),
-          title: Text(title),
+          title: Text(_title),
         ),
         body: Column(
           children: [
             CalculatorDisplay(
-              text: display,
+              text: _display,
             ),
-            CalculatorColumn(
-              items: buttons,
+            CalculatorBody(
+              calculatorButtons: _buttons,
+              onPressedButton: _onPressed,
             ),
           ],
         ),
@@ -78,43 +90,30 @@ class CalculatorDisplay extends StatelessWidget {
   }
 }
 
-class CalculatorColumn extends StatelessWidget {
-  const CalculatorColumn({
-    Key? key,
-    required this.items,
-  }) : super(key: key);
+class CalculatorBody extends StatelessWidget {
+  const CalculatorBody(
+      {Key? key,
+      required this.calculatorButtons,
+      required this.onPressedButton})
+      : super(key: key);
 
-  final List<List<String>> items;
+  final List<List<String>> calculatorButtons;
+  final void Function(String) onPressedButton;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: items
+      children: calculatorButtons
           .map(
-            (item) => CalculatorRow(
-              items: item,
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class CalculatorRow extends StatelessWidget {
-  const CalculatorRow({
-    Key? key,
-    required this.items,
-  }) : super(key: key);
-
-  final List<String> items;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: items
-          .map(
-            (item) => CalculatorButton(
-              text: item,
+            (rowButtons) => Row(
+              children: rowButtons
+                  .map(
+                    (itemButton) => CalculatorButton(
+                      text: itemButton,
+                      onPressed: onPressedButton,
+                    ),
+                  )
+                  .toList(),
             ),
           )
           .toList(),
@@ -126,9 +125,11 @@ class CalculatorButton extends StatelessWidget {
   const CalculatorButton({
     Key? key,
     required this.text,
+    required this.onPressed,
   }) : super(key: key);
 
   final String text;
+  final void Function(String) onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +137,7 @@ class CalculatorButton extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(5),
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () => onPressed(text),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.all(20),
             primary: const Color(0xffced2d3),
