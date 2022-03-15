@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 void main() => runApp(const CalculatorApp());
 
@@ -22,12 +23,47 @@ class _CalculatorAppState extends State<CalculatorApp> {
     ['0', '.', '='],
   ];
 
-  String _display = 'Display';
+  String _display = '0.0';
 
-  void _onPressed(String button) {
+  void _set(String button) {
     setState(() {
-      _display = 'Typed "$button" button';
+      switch (button) {
+        case 'C':
+          _display = _reset();
+          break;
+        case 'D':
+          _display = _delete();
+          break;
+        case '=':
+          _display = _calculate();
+          break;
+        default:
+          _display = _concat(button);
+      }
     });
+  }
+
+  String _concat(String button) {
+    if (_display == '0.0') {
+      return button;
+    }
+
+    return _display + button;
+  }
+
+  String _delete() {
+    return _display.substring(0, _display.length - 1);
+  }
+
+  String _reset() {
+    return _display = '0.0';
+  }
+
+  String _calculate() {
+    return Parser()
+        .parse(_display)
+        .evaluate(EvaluationType.REAL, ContextModel())
+        .toString();
   }
 
   @override
@@ -46,7 +82,7 @@ class _CalculatorAppState extends State<CalculatorApp> {
             ),
             CalculatorBody(
               calculatorButtons: _buttons,
-              onPressedButton: _onPressed,
+              onPressedButton: _set,
             ),
           ],
         ),
